@@ -6,6 +6,10 @@
  */
 
 import { z } from 'zod'
+import { writeFileSync, mkdirSync } from 'fs'
+import { join } from 'path'
+import { homedir } from 'os'
+import { randomBytes } from 'crypto'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
 import type { ServerRequest, ServerNotification } from '@modelcontextprotocol/sdk/types.js'
@@ -25,6 +29,23 @@ import { Semaphore } from '../lib/semaphore.js'
 // Concurrency control: ComfyUI serial (local GPU), API max 4 parallel
 const apiSemaphore = new Semaphore(4)
 const comfyuiSemaphore = new Semaphore(1)
+
+/** Save base64 image to ~/Pictures/meigen/, returns the file path or undefined on failure */
+function saveImageLocally(base64: string, mimeType: string): string | undefined {
+  try {
+    const ext = mimeType.includes('png') ? 'png' : mimeType.includes('webp') ? 'webp' : 'jpg'
+    const date = new Date().toISOString().slice(0, 10)
+    const id = randomBytes(4).toString('hex')
+    const filename = `${date}_${id}.${ext}`
+    const dir = join(homedir(), 'Pictures', 'meigen')
+    mkdirSync(dir, { recursive: true })
+    const filePath = join(dir, filename)
+    writeFileSync(filePath, Buffer.from(base64, 'base64'))
+    return filePath
+  } catch {
+    return undefined
+  }
+}
 
 /** Safe notification — silently ignores if client doesn't support logging */
 async function notify(extra: RequestHandlerExtra<ServerRequest, ServerNotification>, message: string) {
@@ -156,9 +177,11 @@ async function generateWithOpenAI(
   const provider = new OpenAIProvider(config.openaiApiKey!, config.openaiBaseUrl, config.openaiModel)
   const result = await provider.generate({ prompt, model, size, quality, referenceImages })
 
+  const savedPath = saveImageLocally(result.imageBase64, result.mimeType)
   const refNote = referenceImages?.length
     ? `\nUsed ${referenceImages.length} reference image(s) for guidance.`
     : ''
+  const pathNote = savedPath ? `\nSaved to: ${savedPath}` : ''
 
   return {
     content: [
@@ -169,7 +192,7 @@ async function generateWithOpenAI(
       },
       {
         type: 'text' as const,
-        text: `Image generated successfully via OpenAI (${model || config.openaiModel}).${refNote}\n\nNote: OpenAI-generated images are returned as inline data and do not have a reusable URL.`,
+        text: `Image generated via OpenAI (${model || config.openaiModel}).${refNote}${pathNote}`,
       },
     ],
   }
@@ -224,6 +247,9 @@ async function generateWithMeiGen(
   const base64 = Buffer.from(buffer).toString('base64')
   const mimeType = imageRes.headers.get('content-type') || 'image/jpeg'
 
+  const savedPath = saveImageLocally(base64, mimeType)
+  const pathNote = savedPath ? `\nSaved to: ${savedPath}` : ''
+
   return {
     content: [
       {
@@ -233,7 +259,7 @@ async function generateWithMeiGen(
       },
       {
         type: 'text' as const,
-        text: `Image generated via MeiGen (model: ${model || 'default'}).\nImage URL: ${status.imageUrl}\n\nYou can use this URL as referenceImages in follow-up generate_image() calls for variations or style transfer.`,
+        text: `Image generated via MeiGen (model: ${model || 'default'}).${pathNote}\nImage URL: ${status.imageUrl}\n\nYou can use this URL as referenceImages in follow-up generate_image() calls for variations or style transfer.`,
       },
     ],
   }
@@ -282,6 +308,9 @@ async function generateWithComfyUI(
     },
   )
 
+  const savedPath = saveImageLocally(result.imageBase64, result.mimeType)
+  const pathNote = savedPath ? `\nSaved to: ${savedPath}` : ''
+
   return {
     content: [
       {
@@ -291,7 +320,7 @@ async function generateWithComfyUI(
       },
       {
         type: 'text' as const,
-        text: `Image generated via ComfyUI (workflow: ${workflowName}).${result.referenceImageWarning ? `\n\nWarning: ${result.referenceImageWarning}` : ''}\n\nNote: ComfyUI-generated images are returned as inline data and do not have a reusable URL.`,
+        text: `Image generated via ComfyUI (workflow: ${workflowName}).${pathNote}${result.referenceImageWarning ? `\n\nWarning: ${result.referenceImageWarning}` : ''}`,
       },
     ],
   }

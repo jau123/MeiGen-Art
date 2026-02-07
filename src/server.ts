@@ -52,7 +52,16 @@ User knows what they want. Don't over-process.
 How to tell: the prompt has specific visual details, style references,
   or technical terms (lens, lighting, composition, etc.)
 
-### D. BATCH REQUEST — "4 directions", "multiple versions", "a set of assets"
+### D. EDIT/MODIFY — user provides an existing image and asks for changes
+User wants to modify an existing image: add text, change background, adjust colors, remove elements, etc.
+-> Do NOT enhance or expand the prompt. Keep it minimal and edit-focused.
+-> Upload the reference image (if local), then generate with a short, literal prompt
+   describing ONLY the edit, e.g. "Add the text 'meigen.ai' at the bottom of this image"
+-> The reference image carries all the visual context — the prompt only needs to describe the change
+-> NEVER re-describe the entire original image in the prompt
+How to tell: user provides/references an image AND describes a specific change (not a new creation)
+
+### E. BATCH REQUEST — "4 directions", "multiple versions", "a set of assets"
 User wants multiple images.
 -> Plan the variants first, show the plan, get confirmation
 -> THEN generate (see Phase 2 for limits)
