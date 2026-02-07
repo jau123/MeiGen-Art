@@ -53,11 +53,24 @@ MeiGen-Art 走了一条不同的路：它赋予你的 AI 助手**专业的创意
 /plugin install meigen@meigen-marketplace
 ```
 
-安装后运行配置向导：
+**安装完成后，重启 Claude Code**（关闭再打开，或新建终端标签页）以激活插件。
+
+#### 首次配置
+
+重启后，免费功能无需配置即可使用——试试问：
+
+> "帮我搜索一些创意灵感"
+
+如需解锁图片生成，运行配置向导：
 
 ```
 /meigen:setup
 ```
+
+向导会引导你完成：
+1. **选择后端** — MeiGen 平台（推荐，支持 Nanobanana Pro / GPT image 1.5 / Seedream 4.5）、本地 ComfyUI、或 OpenAI 兼容 API
+2. **输入凭证** — API Token、Key 或 ComfyUI 地址。也可以直接粘贴 `curl` 命令，自动提取配置
+3. **完成** — 再次重启 Claude Code，即可开始生成图片
 
 ### OpenClaw
 
@@ -79,7 +92,7 @@ cp -r skills/* ~/.openclaw/workspace/skills/
         "meigen": {
           "transport": "stdio",
           "command": "npx",
-          "args": ["-y", "meigen"],
+          "args": ["-y", "meigen@latest"],
           "env": {
             "MEIGEN_API_TOKEN": "meigen_sk_..."
           }
@@ -100,14 +113,19 @@ cp -r skills/* ~/.openclaw/workspace/skills/
     "meigen": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "meigen"],
+      "args": ["-y", "meigen@latest"],
       "env": {
-        "MEIGEN_API_TOKEN": "meigen_sk_..."
+        "MEIGEN_API_TOKEN": "meigen_sk_...",
+        "OPENAI_API_KEY": "sk-...",
+        "OPENAI_BASE_URL": "https://api.openai.com",
+        "OPENAI_MODEL": "gpt-image-1"
       }
     }
   }
 }
 ```
+
+> 只需填写你用到的环境变量。`MEIGEN_API_TOKEN` 用于 MeiGen 平台，`OPENAI_*` 用于 OpenAI 兼容 API。
 
 > **提示：** 即使没有 API Key，免费功能（灵感搜索、提示词增强、模型列表）也可以直接使用。
 
@@ -167,7 +185,12 @@ MeiGen-Art 支持三种图片生成后端，可以配置一个或多个——助
 
 ### MeiGen 平台（推荐）
 
-云端 API，支持多种模型：NanoBanana Pro、Seedream 4.5、Midjourney Niji7 等。包含每日免费额度。
+云端 API，支持多种模型：Nanobanana Pro、GPT image 1.5、Seedream 4.5 等。
+
+**获取 API Token：**
+1. 登录 [meigen.ai](https://www.meigen.ai)
+2. 点击头像 → **设置** → **API Keys**
+3. 创建新 Key（以 `meigen_sk_` 开头）
 
 ```json
 { "meigenApiToken": "meigen_sk_..." }

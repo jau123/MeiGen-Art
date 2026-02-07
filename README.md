@@ -53,11 +53,24 @@ MeiGen-Art takes a different approach: it gives your AI assistant **professional
 /plugin install meigen@meigen-marketplace
 ```
 
-Then run the setup wizard to configure your image generation provider:
+**After installation, restart Claude Code** (close and reopen, or open a new terminal tab) to activate the plugin.
+
+#### First-Time Setup
+
+Once restarted, free features work immediately — try asking:
+
+> "Search for some creative inspiration"
+
+To unlock image generation, run the setup wizard:
 
 ```
 /meigen:setup
 ```
+
+The wizard walks you through:
+1. **Choose a provider** — MeiGen Platform (recommended, supports Nanobanana Pro / GPT image 1.5 / Seedream 4.5), local ComfyUI, or OpenAI-compatible API
+2. **Enter credentials** — API token, key, or ComfyUI URL. You can also paste a `curl` command and it auto-extracts everything
+3. **Done** — restart Claude Code once more, then start generating
 
 ### OpenClaw
 
@@ -79,7 +92,7 @@ cp -r skills/* ~/.openclaw/workspace/skills/
         "meigen": {
           "transport": "stdio",
           "command": "npx",
-          "args": ["-y", "meigen"],
+          "args": ["-y", "meigen@latest"],
           "env": {
             "MEIGEN_API_TOKEN": "meigen_sk_..."
           }
@@ -100,14 +113,19 @@ Add to your `.mcp.json` or equivalent config:
     "meigen": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "meigen"],
+      "args": ["-y", "meigen@latest"],
       "env": {
-        "MEIGEN_API_TOKEN": "meigen_sk_..."
+        "MEIGEN_API_TOKEN": "meigen_sk_...",
+        "OPENAI_API_KEY": "sk-...",
+        "OPENAI_BASE_URL": "https://api.openai.com",
+        "OPENAI_MODEL": "gpt-image-1"
       }
     }
   }
 }
 ```
+
+> Only include the env vars you need. `MEIGEN_API_TOKEN` for MeiGen platform, `OPENAI_*` for OpenAI-compatible APIs.
 
 > **Tip:** Even without an API key, free features (inspiration search, prompt enhancement, model listing) work immediately.
 
@@ -167,7 +185,12 @@ MeiGen-Art supports three image generation backends. You can configure one or mu
 
 ### MeiGen Platform (Recommended)
 
-Cloud API with multiple model options: NanoBanana Pro, Seedream 4.5, Midjourney Niji7, and more. Free daily credits included.
+Cloud API with multiple model options: Nanobanana Pro, GPT image 1.5, Seedream 4.5, and more.
+
+**Get your API token:**
+1. Sign in at [meigen.ai](https://www.meigen.ai)
+2. Click your avatar → **Settings** → **API Keys**
+3. Create a new key (starts with `meigen_sk_`)
 
 ```json
 { "meigenApiToken": "meigen_sk_..." }

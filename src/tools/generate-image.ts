@@ -71,7 +71,7 @@ export function registerGenerateImage(server: McpServer, apiClient: MeiGenApiCli
         return {
           content: [{
             type: 'text' as const,
-            text: 'No image generation providers configured.\n\nTo configure, run /meigen:setup or set one of:\n- MEIGEN_API_TOKEN: Use MeiGen platform (see list_models for available models)\n- OPENAI_API_KEY: Use OpenAI/compatible API\n- Import a ComfyUI workflow for local generation\n\nSee list_models() for available options.',
+            text: 'No image generation providers configured.\n\nQuickest way to start:\n1. Get a MeiGen API token at https://www.meigen.ai (sign in → avatar → Settings → API Keys)\n2. Run /meigen:setup and paste your token\n\nOr configure one of:\n- MEIGEN_API_TOKEN: MeiGen platform (Nanobanana Pro, GPT image 1.5, Seedream 4.5)\n- OPENAI_API_KEY: OpenAI/compatible API (gpt-image-1, etc.)\n- Import a ComfyUI workflow for local GPU generation',
           }],
           isError: true,
         }

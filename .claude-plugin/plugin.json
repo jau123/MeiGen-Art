@@ -1,24 +1,8 @@
 {
   "name": "meigen",
-  "version": "0.1.0",
   "description": "Visual creative expert — search inspiration, enhance prompts, and generate AI images with intelligent workflow orchestration",
   "author": {
     "name": "MeiGen",
     "url": "https://www.meigen.ai"
-  },
-  "repository": "https://github.com/jau123/MeiGen-Art",
-  "license": "MIT",
-  "keywords": ["image-generation", "ai-art", "creative", "prompt-engineering", "mcp"],
-  "skills": "./skills/",
-  "mcpServers": {
-    "meigen": {
-      "command": "npx",
-      "args": ["-y", "meigen@latest"],
-      "env": {
-        "MEIGEN_API_TOKEN": "${MEIGEN_API_TOKEN}",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "OPENAI_BASE_URL": "${OPENAI_BASE_URL}"
-      }
-    }
   }
 }

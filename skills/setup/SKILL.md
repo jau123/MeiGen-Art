@@ -46,8 +46,7 @@ Present these options to the user:
 
 ### Option A: MeiGen Platform (Recommended)
 
-- Supports **Nanobanana Pro**, **Seedream 4.5**, **Midjourney Niji7** and more
-- Free daily credits included
+- Supports **Nanobanana Pro**, **GPT image 1.5**, **Seedream 4.5** and more
 - Reference image support for style transfer
 - No additional accounts needed — just get a token from meigen.ai
 

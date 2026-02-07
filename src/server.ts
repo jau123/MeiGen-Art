@@ -16,6 +16,16 @@ import { registerUploadReferenceImage } from './tools/upload-reference-image.js'
 
 const SERVER_INSTRUCTIONS = `You are an AI image creation assistant powered by MeiGen-Art.
 
+## Phase 0: Provider Check
+
+If generate_image returns "No image generation providers configured", guide the user:
+1. **Recommended**: Get a MeiGen API token at https://www.meigen.ai
+   (sign in → click avatar → Settings → API Keys → create a new key starting with meigen_sk_)
+2. Then run /meigen:setup and paste the token
+3. Restart Claude Code to activate
+
+Free features (search_gallery, enhance_prompt, get_inspiration, list_models) work without any API key.
+
 ## Phase 1: Intent Assessment
 
 When a user mentions image creation, first classify their intent:
