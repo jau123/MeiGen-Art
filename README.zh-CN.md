@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="assets/banner.jpg" alt="LibreArt Banner" width="600">
+  <img src="assets/banner.jpg" alt="MeiGen-Art Banner" width="600">
 </p>
 
 <h1 align="center">
-  LibreArt — AI 视觉创意专家
+  MeiGen-Art — AI 视觉创意专家
 </h1>
 
 <p align="center">
@@ -31,11 +31,11 @@
 
 ---
 
-## 为什么选择 LibreArt？
+## 为什么选择 MeiGen-Art？
 
 大多数 AI 图片工具，要么是简单的"输入提示词 → 输出图片"的 API，要么是需要专业知识的复杂界面。
 
-LibreArt 走了一条不同的路：它赋予你的 AI 助手**专业的创意能力**——1,300+ 精选热门提示词、风格化的提示词增强技术、多步骤工作流编排——你只需要用自然语言描述想要什么，就能得到专业品质的结果。
+MeiGen-Art 走了一条不同的路：它赋予你的 AI 助手**专业的创意能力**——1,300+ 精选热门提示词、风格化的提示词增强技术、多步骤工作流编排——你只需要用自然语言描述想要什么，就能得到专业品质的结果。
 
 **不需要任何提示词工程知识。** 像跟创意总监对话一样，跟你的 AI 助手聊就行了。
 
@@ -161,7 +161,7 @@ claude mcp add --transport stdio meigen \
 
 <h2 id="生成后端">生成后端</h2>
 
-LibreArt 支持三种图片生成后端，可以配置一个或多个——助手会自动选择最佳可用后端，也可以在每次请求时手动指定。
+MeiGen-Art 支持三种图片生成后端，可以配置一个或多个——助手会自动选择最佳可用后端，也可以在每次请求时手动指定。
 
 ### MeiGen 平台（推荐）
 

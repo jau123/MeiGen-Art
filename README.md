@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="assets/banner.jpg" alt="LibreArt Banner" width="600">
+  <img src="assets/banner.jpg" alt="MeiGen-Art Banner" width="600">
 </p>
 
 <h1 align="center">
-  LibreArt — Visual Creative Expert
+  MeiGen-Art — Visual Creative Expert
 </h1>
 
 <p align="center">
@@ -31,11 +31,11 @@
 
 ---
 
-## Why LibreArt?
+## Why MeiGen-Art?
 
 Most AI image tools are either simple prompt-in-image-out APIs, or complex UIs that require expertise.
 
-LibreArt takes a different approach: it gives your AI assistant **professional creative knowledge** — 1,300+ curated trending prompts, style-specific enhancement techniques, and multi-step workflow orchestration — so you can describe what you want in plain language, and get production-quality results.
+MeiGen-Art takes a different approach: it gives your AI assistant **professional creative knowledge** — 1,300+ curated trending prompts, style-specific enhancement techniques, and multi-step workflow orchestration — so you can describe what you want in plain language, and get production-quality results.
 
 **No prompt engineering skills needed.** Just talk to your AI assistant like you would to a creative director.
 
@@ -161,7 +161,7 @@ Local images are automatically compressed and uploaded. The returned URL works a
 
 <h2 id="providers">Providers</h2>
 
-LibreArt supports three image generation backends. You can configure one or multiple — the assistant auto-selects the best available, or you can specify per-request.
+MeiGen-Art supports three image generation backends. You can configure one or multiple — the assistant auto-selects the best available, or you can specify per-request.
 
 ### MeiGen Platform (Recommended)
 
