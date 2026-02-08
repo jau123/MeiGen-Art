@@ -50,9 +50,11 @@ MeiGen-Art 是一个开源的 **MCP Server**（插件），连接你的 AI 助�
 ## 实际效果
 
 <p align="center">
-  <video src="https://github.com/user-attachments/assets/20437f76-f8c8-45f8-a028-c906a568876b" controls width="600">
-    浏览器不支持视频标签。<a href="https://youtu.be/JQ3DZ1DXqvs">在 YouTube 观看</a>。
-  </video>
+  <a href="https://youtu.be/JQ3DZ1DXqvs">
+    <img src="https://img.youtube.com/vi/JQ3DZ1DXqvs/maxresdefault.jpg" alt="观看演示" width="600">
+  </a>
+  <br>
+  <sub>▶ 在 YouTube 观看演示</sub>
 </p>
 
 ### Logo 设计 — 多方案 + 迭代
