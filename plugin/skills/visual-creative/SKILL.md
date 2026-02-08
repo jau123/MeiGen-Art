@@ -42,6 +42,21 @@ To keep the main conversation context clean, delegate heavy operations to specia
 - Logo → mockups: delegate to 1 `image-generator` (logo) → wait → delegate to `prompt-crafter` (mockup prompts) → delegate to N `image-generator` agents in parallel
 - Find inspiration: delegate to `gallery-researcher`
 
+## Tool Composition Principle
+
+Before generating, always ask yourself: **do I have enough visual context?**
+
+If the user's request involves something visually specific that you cannot describe accurately from memory alone — a character, a brand, a product, a place, an art style — **proactively search for reference first**, then use it as `referenceImages`.
+
+The general pattern: **search → get reference → generate with reference + descriptive prompt**.
+
+Your prompt should tell the model to USE what's in the reference image, e.g.:
+- "Using the character shown in the reference image, create a scene where..."
+- "Incorporating the logo from the reference image, design a..."
+- "In the architectural style shown in the reference, generate..."
+
+This is not a specific mode — it's a principle that applies across ALL modes. Combine tools freely and creatively based on what the task needs. The six modes below are common patterns, not an exhaustive list.
+
 ## Core Workflow Modes
 
 ### Mode 1: Inspiration Search
