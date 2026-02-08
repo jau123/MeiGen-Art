@@ -21,8 +21,6 @@ import {
   ComfyUIProvider,
   loadWorkflow,
   listWorkflows,
-  getWorkflowSummary,
-  calculateSize,
 } from '../lib/providers/comfyui.js'
 import { Semaphore } from '../lib/semaphore.js'
 
@@ -66,7 +64,7 @@ export const generateImageSchema = {
   size: z.string().optional()
     .describe('Image size for OpenAI-compatible providers: "1024x1024", "1536x1024", "auto". MeiGen/ComfyUI: use aspectRatio instead.'),
   aspectRatio: z.string().optional()
-    .describe('Aspect ratio: "1:1", "3:4", "4:3", "16:9", "9:16". For MeiGen and ComfyUI providers.'),
+    .describe('Aspect ratio: "1:1", "3:4", "4:3", "16:9", "9:16". For MeiGen provider. ComfyUI: use comfyui_workflow modify to adjust dimensions before generating.'),
   quality: z.string().optional()
     .describe('Image quality for OpenAI-compatible providers: "low", "medium", "high"'),
   referenceImages: z.array(z.string()).optional()
@@ -76,7 +74,7 @@ export const generateImageSchema = {
   workflow: z.string().optional()
     .describe('ComfyUI workflow name to use (from comfyui_workflow list). Uses default workflow if not specified.'),
   negativePrompt: z.string().optional()
-    .describe('Negative prompt for ComfyUI generation. Overrides the workflow template\'s negative prompt.'),
+    .describe('Negative prompt for OpenAI-compatible providers. ComfyUI: use comfyui_workflow modify to set negative prompt in the workflow before generating.'),
 }
 
 export function registerGenerateImage(server: McpServer, apiClient: MeiGenApiClient, config: MeiGenConfig) {
@@ -136,7 +134,7 @@ export function registerGenerateImage(server: McpServer, apiClient: MeiGenApiCli
           case 'comfyui': {
             await comfyuiSemaphore.acquire()
             try {
-              return await generateWithComfyUI(config, prompt, workflow, aspectRatio, negativePrompt, referenceImages, extra)
+              return await generateWithComfyUI(config, prompt, workflow, referenceImages, extra)
             } finally {
               comfyuiSemaphore.release()
             }
@@ -269,8 +267,6 @@ async function generateWithComfyUI(
   config: MeiGenConfig,
   prompt: string,
   workflow: string | undefined,
-  aspectRatio: string | undefined,
-  negativePrompt: string | undefined,
   referenceImages: string[] | undefined,
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ) {
@@ -283,26 +279,21 @@ async function generateWithComfyUI(
   const workflowName = workflow || config.comfyuiDefaultWorkflow || workflows[0]
   const workflowData = loadWorkflow(workflowName)
 
-  // Calculate dimensions (if aspectRatio specified)
-  let width: number | undefined
-  let height: number | undefined
-  if (aspectRatio) {
-    const summary = getWorkflowSummary(workflowData)
-    if (summary.width && summary.height) {
-      const newSize = calculateSize(aspectRatio, summary.width, summary.height)
-      width = newSize.width
-      height = newSize.height
-    }
+  const comfyuiUrl = config.comfyuiUrl || 'http://localhost:8188'
+  const provider = new ComfyUIProvider(comfyuiUrl)
+
+  // Pre-flight: check if ComfyUI is reachable
+  const health = await provider.checkConnection()
+  if (!health.ok) {
+    throw new Error(`ComfyUI is not reachable at ${comfyuiUrl}. Make sure ComfyUI is running.\nDetails: ${health.error}`)
   }
 
   // Notify: generation submitted
   await notify(extra, `Submitting workflow "${workflowName}" to ComfyUI...`)
-
-  const provider = new ComfyUIProvider(config.comfyuiUrl || 'http://localhost:8188')
   const result = await provider.generate(
     workflowData,
     prompt,
-    { width, height, negativePrompt, referenceImages },
+    { referenceImages },
     async (elapsedMs) => {
       await notify(extra, `Still generating... (${Math.round(elapsedMs / 1000)}s elapsed)`)
     },

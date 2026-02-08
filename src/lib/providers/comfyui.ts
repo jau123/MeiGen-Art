@@ -21,11 +21,11 @@ export interface ComfyUINode {
   _meta?: { title?: string }
 }
 
-/** Auto-detected key node mapping */
+/** Auto-detected key node mapping — all fields optional (best-effort detection) */
 export interface WorkflowNodeMap {
-  positivePrompt: string
+  positivePrompt?: string
   negativePrompt?: string
-  sampler: string
+  sampler?: string
   latentImage?: string
   checkpoint?: string
   saveImage?: string
@@ -91,118 +91,91 @@ export function workflowExists(name: string): boolean {
 // Workflow Node Detection
 // ============================================================
 
-const SAMPLER_TYPES = ['KSampler', 'KSamplerAdvanced']
-const PROMPT_TYPES = ['CLIPTextEncode']
-const LATENT_TYPES = ['EmptyLatentImage']
-const CHECKPOINT_TYPES = ['CheckpointLoaderSimple', 'CheckpointLoader']
-const SAVE_TYPES = ['SaveImage', 'PreviewImage']
-const LOAD_IMAGE_TYPES = ['LoadImage']
-
 /**
- * Auto-detect key nodes in a workflow.
- * Strategy: find KSampler -> trace positive/negative references -> locate prompt nodes
+ * Best-effort auto-detection of key nodes. Never throws — returns what it can find.
+ * Strategy:
+ *   1. Find sampler node (fuzzy match on class_type containing "sampler"/"ksampler")
+ *   2. Trace sampler's positive input → find text/prompt node
+ *   3. Fallback: search all nodes for any with a direct string `text` input
+ *   4. Find LoadImage-like nodes for reference image injection
  */
 export function detectNodes(workflow: ComfyUIWorkflow): WorkflowNodeMap {
-  // 1. Find KSampler
-  let samplerId: string | undefined
+  const result: WorkflowNodeMap = {}
+
+  // 1. Find sampler (fuzzy: class_type contains "sampler", case-insensitive)
   for (const [id, node] of Object.entries(workflow)) {
-    if (SAMPLER_TYPES.includes(node.class_type)) {
-      samplerId = id
+    if (node.class_type.toLowerCase().includes('sampler')) {
+      result.sampler = id
       break
     }
   }
-  if (!samplerId) {
-    throw new Error('No KSampler node found in workflow. Please ensure your workflow contains a KSampler node.')
-  }
 
-  const samplerNode = workflow[samplerId]
-
-  // 2. Trace positive/negative references -> CLIPTextEncode
-  let positivePromptId: string | undefined
-  let negativePromptId: string | undefined
-
-  const positiveRef = samplerNode.inputs.positive
-  if (Array.isArray(positiveRef) && typeof positiveRef[0] === 'string') {
-    const refId = positiveRef[0]
-    if (workflow[refId] && PROMPT_TYPES.includes(workflow[refId].class_type)) {
-      positivePromptId = refId
+  // 2. Trace sampler's positive input → find text/prompt node
+  if (result.sampler) {
+    const samplerNode = workflow[result.sampler]
+    const positiveRef = samplerNode.inputs.positive
+    if (Array.isArray(positiveRef) && typeof positiveRef[0] === 'string') {
+      const refNode = workflow[positiveRef[0]]
+      if (refNode && typeof refNode.inputs.text === 'string') {
+        result.positivePrompt = positiveRef[0]
+      }
     }
-  }
-
-  const negativeRef = samplerNode.inputs.negative
-  if (Array.isArray(negativeRef) && typeof negativeRef[0] === 'string') {
-    const refId = negativeRef[0]
-    if (workflow[refId] && PROMPT_TYPES.includes(workflow[refId].class_type)) {
-      negativePromptId = refId
-    }
-  }
-
-  if (!positivePromptId) {
-    // Fallback: find first CLIPTextEncode
-    for (const [id, node] of Object.entries(workflow)) {
-      if (PROMPT_TYPES.includes(node.class_type)) {
-        positivePromptId = id
-        break
+    const negativeRef = samplerNode.inputs.negative
+    if (Array.isArray(negativeRef) && typeof negativeRef[0] === 'string') {
+      const refNode = workflow[negativeRef[0]]
+      if (refNode && typeof refNode.inputs.text === 'string') {
+        result.negativePrompt = negativeRef[0]
       }
     }
   }
-  if (!positivePromptId) {
-    throw new Error('No CLIPTextEncode node found in workflow.')
-  }
 
-  // 3. Find EmptyLatentImage (prefer KSampler's latent_image reference)
-  let latentImageId: string | undefined
-  const latentRef = samplerNode.inputs.latent_image
-  if (Array.isArray(latentRef) && typeof latentRef[0] === 'string') {
-    const refId = latentRef[0]
-    if (workflow[refId] && LATENT_TYPES.includes(workflow[refId].class_type)) {
-      latentImageId = refId
-    }
-  }
-  if (!latentImageId) {
+  // 3. Fallback for prompt: find first node with a direct string `text` input
+  if (!result.positivePrompt) {
     for (const [id, node] of Object.entries(workflow)) {
-      if (LATENT_TYPES.includes(node.class_type)) {
-        latentImageId = id
+      const text = node.inputs.text
+      if (typeof text === 'string' && text.length > 0) {
+        result.positivePrompt = id
         break
       }
     }
   }
 
-  // 4. Find CheckpointLoaderSimple
-  let checkpointId: string | undefined
-  for (const [id, node] of Object.entries(workflow)) {
-    if (CHECKPOINT_TYPES.includes(node.class_type)) {
-      checkpointId = id
-      break
-    }
-  }
-
-  // 5. Find SaveImage
-  let saveImageId: string | undefined
-  for (const [id, node] of Object.entries(workflow)) {
-    if (SAVE_TYPES.includes(node.class_type)) {
-      saveImageId = id
-      break
-    }
-  }
-
-  // 6. Find LoadImage nodes (for reference image injection)
+  // 4. Find LoadImage-like nodes (fuzzy: class_type contains "loadimage")
   const loadImageIds: string[] = []
   for (const [id, node] of Object.entries(workflow)) {
-    if (LOAD_IMAGE_TYPES.includes(node.class_type)) {
+    if (node.class_type.toLowerCase().includes('loadimage')) {
       loadImageIds.push(id)
     }
   }
+  if (loadImageIds.length > 0) result.loadImages = loadImageIds
 
-  return {
-    positivePrompt: positivePromptId,
-    negativePrompt: negativePromptId,
-    sampler: samplerId,
-    latentImage: latentImageId,
-    checkpoint: checkpointId,
-    saveImage: saveImageId,
-    loadImages: loadImageIds.length > 0 ? loadImageIds : undefined,
+  // 5. Find checkpoint loader (fuzzy: class_type contains "checkpoint")
+  for (const [id, node] of Object.entries(workflow)) {
+    if (node.class_type.toLowerCase().includes('checkpoint')) {
+      result.checkpoint = id
+      break
+    }
   }
+
+  // 6. Find latent image / size node (fuzzy)
+  for (const [id, node] of Object.entries(workflow)) {
+    if (node.class_type.toLowerCase().includes('latentimage') ||
+        node.class_type.toLowerCase().includes('emptylatent')) {
+      result.latentImage = id
+      break
+    }
+  }
+
+  // 7. Find save/output node (fuzzy)
+  for (const [id, node] of Object.entries(workflow)) {
+    if (node.class_type.toLowerCase().includes('saveimage') ||
+        node.class_type.toLowerCase().includes('previewimage')) {
+      result.saveImage = id
+      break
+    }
+  }
+
+  return result
 }
 
 /** Get workflow summary info */
@@ -214,11 +187,13 @@ export function getWorkflowSummary(workflow: ComfyUIWorkflow): WorkflowSummary {
   try {
     const nodes = detectNodes(workflow)
 
-    const samplerInputs = workflow[nodes.sampler].inputs
-    summary.steps = samplerInputs.steps as number | undefined
-    summary.cfg = samplerInputs.cfg as number | undefined
-    summary.sampler = samplerInputs.sampler_name as string | undefined
-    summary.scheduler = samplerInputs.scheduler as string | undefined
+    if (nodes.sampler) {
+      const samplerInputs = workflow[nodes.sampler].inputs
+      summary.steps = samplerInputs.steps as number | undefined
+      summary.cfg = samplerInputs.cfg as number | undefined
+      summary.sampler = samplerInputs.sampler_name as string | undefined
+      summary.scheduler = samplerInputs.scheduler as string | undefined
+    }
 
     if (nodes.latentImage) {
       const latentInputs = workflow[nodes.latentImage].inputs
@@ -236,67 +211,33 @@ export function getWorkflowSummary(workflow: ComfyUIWorkflow): WorkflowSummary {
   return summary
 }
 
-/** Get detailed editable node info for a workflow (used by view action) */
+/** Show ALL nodes and their editable (non-connection) inputs.
+ *  Designed for LLM consumption — the LLM reads this output and decides
+ *  which parameters to modify via the "modify" action before generation. */
 export function getEditableNodes(workflow: ComfyUIWorkflow): string {
-  let nodeMap: WorkflowNodeMap
-  try {
-    nodeMap = detectNodes(workflow)
-  } catch (e) {
-    return `Error detecting nodes: ${e instanceof Error ? e.message : String(e)}`
-  }
-
   const lines: string[] = []
 
-  // KSampler
-  const sampler = workflow[nodeMap.sampler]
-  lines.push(`Node #${nodeMap.sampler} (${sampler.class_type}) — ${sampler._meta?.title || 'Main Sampler'}`)
-  for (const [key, val] of Object.entries(sampler.inputs)) {
-    if (Array.isArray(val)) continue // Skip node connection references
-    if (key === 'seed') {
-      lines.push(`  ${key}: [auto-randomized per generation]`)
-    } else {
+  // Mark auto-injected nodes so LLM knows what's handled automatically
+  const nodes = detectNodes(workflow)
+  const promptNodeId = nodes.positivePrompt
+  const loadImageIds = nodes.loadImages || []
+
+  for (const [id, node] of Object.entries(workflow)) {
+    const title = node._meta?.title || node.class_type
+    const marker =
+      id === promptNodeId ? ' ← prompt injected here at generation'
+      : loadImageIds.includes(id) ? ' ← reference image injected here'
+      : ''
+
+    lines.push(`Node #${id} (${node.class_type}) — ${title}${marker}`)
+
+    for (const [key, val] of Object.entries(node.inputs)) {
+      if (Array.isArray(val)) continue // Node connections — not directly editable
       lines.push(`  ${key}: ${JSON.stringify(val)}`)
     }
-  }
-
-  // Positive Prompt
-  const posNode = workflow[nodeMap.positivePrompt]
-  lines.push('')
-  lines.push(`Node #${nodeMap.positivePrompt} (${posNode.class_type}) — ${posNode._meta?.title || 'Positive Prompt'}`)
-  lines.push(`  text: [replaced by your prompt per generation]`)
-
-  // Negative Prompt
-  if (nodeMap.negativePrompt) {
-    const negNode = workflow[nodeMap.negativePrompt]
     lines.push('')
-    lines.push(`Node #${nodeMap.negativePrompt} (${negNode.class_type}) — ${negNode._meta?.title || 'Negative Prompt'}`)
-    const negText = negNode.inputs.text
-    lines.push(`  text: ${JSON.stringify(negText)}`)
   }
 
-  // EmptyLatentImage
-  if (nodeMap.latentImage) {
-    const latent = workflow[nodeMap.latentImage]
-    lines.push('')
-    lines.push(`Node #${nodeMap.latentImage} (${latent.class_type}) — ${latent._meta?.title || 'Image Size'}`)
-    for (const [key, val] of Object.entries(latent.inputs)) {
-      if (Array.isArray(val)) continue
-      lines.push(`  ${key}: ${JSON.stringify(val)}`)
-    }
-  }
-
-  // CheckpointLoaderSimple
-  if (nodeMap.checkpoint) {
-    const ckpt = workflow[nodeMap.checkpoint]
-    lines.push('')
-    lines.push(`Node #${nodeMap.checkpoint} (${ckpt.class_type}) — ${ckpt._meta?.title || 'Model'}`)
-    for (const [key, val] of Object.entries(ckpt.inputs)) {
-      if (Array.isArray(val)) continue
-      lines.push(`  ${key}: ${JSON.stringify(val)}`)
-    }
-  }
-
-  lines.push('')
   lines.push('To modify a parameter, use action "modify" with nodeId, input, and value.')
   lines.push('Example: nodeId="3", input="steps", value="30"')
 
@@ -327,8 +268,11 @@ export class ComfyUIProvider {
 
   async checkConnection(): Promise<{ ok: boolean; error?: string }> {
     try {
-      const res = await fetch(`${this.baseUrl}/system_stats`)
-      if (!res.ok) return { ok: false, error: `HTTP ${res.status}` }
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 3000)
+      // Use root URL — served by all ComfyUI versions (web UI)
+      await fetch(this.baseUrl, { signal: controller.signal })
+      clearTimeout(timeout)
       return { ok: true }
     } catch (e) {
       return { ok: false, error: e instanceof Error ? e.message : String(e) }
@@ -366,15 +310,14 @@ export class ComfyUIProvider {
     }
   }
 
-  /** Submit a workflow and wait for the result */
+  /** Submit a workflow and wait for the result.
+   *  Only injects prompt text and reference images — all other workflow
+   *  parameters (seed, steps, model, size, etc.) are left as-is in the
+   *  template. Use comfyui_workflow modify to adjust them before generating. */
   async generate(
     workflow: ComfyUIWorkflow,
     prompt: string,
     options?: {
-      seed?: number
-      width?: number
-      height?: number
-      negativePrompt?: string
       referenceImages?: string[]
     },
     onProgress?: (elapsedMs: number) => Promise<void>,
@@ -382,28 +325,17 @@ export class ComfyUIProvider {
     // 1. Deep-copy the template
     const wf = JSON.parse(JSON.stringify(workflow)) as ComfyUIWorkflow
 
-    // 2. Detect key nodes
+    // 2. Detect prompt and reference image injection points (best-effort)
     const nodes = detectNodes(wf)
 
-    // 3. Fill in prompt
-    wf[nodes.positivePrompt].inputs.text = prompt
-
-    // 4. Fill in negative prompt (if provided)
-    if (options?.negativePrompt && nodes.negativePrompt) {
-      wf[nodes.negativePrompt].inputs.text = options.negativePrompt
+    // 3. Inject prompt — if auto-detection found the node.
+    //    If not, the workflow is submitted as-is (LLM should have set
+    //    the prompt via comfyui_workflow modify beforehand).
+    if (nodes.positivePrompt) {
+      wf[nodes.positivePrompt].inputs.text = prompt
     }
 
-    // 5. Fill in seed
-    const seed = options?.seed ?? Math.floor(Math.random() * 2147483647)
-    wf[nodes.sampler].inputs.seed = seed
-
-    // 6. Fill in dimensions (if provided)
-    if (nodes.latentImage && (options?.width || options?.height)) {
-      if (options?.width) wf[nodes.latentImage].inputs.width = options.width
-      if (options?.height) wf[nodes.latentImage].inputs.height = options.height
-    }
-
-    // 6.5. Handle reference images for LoadImage nodes
+    // 4. Handle reference images for LoadImage nodes
     let referenceImageWarning: string | undefined
     if (options?.referenceImages?.length) {
       if (nodes.loadImages?.length) {

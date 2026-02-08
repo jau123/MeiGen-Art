@@ -145,13 +145,8 @@ function handleImport(name: string | undefined, filePath: string | undefined) {
     return errorResult('Invalid workflow format. Expected an object with node IDs as keys.')
   }
 
-  // Detect key nodes
-  let nodeMap
-  try {
-    nodeMap = detectNodes(workflow)
-  } catch (e) {
-    return errorResult(`Workflow validation failed: ${e instanceof Error ? e.message : String(e)}`)
-  }
+  // Best-effort detection (never fails)
+  const nodeMap = detectNodes(workflow)
 
   // Determine save name
   const saveName = name || filePath.replace(/^.*[\\/]/, '').replace(/\.json$/i, '') || 'workflow'
@@ -167,11 +162,10 @@ function handleImport(name: string | undefined, filePath: string | undefined) {
   const lines = [
     `Workflow "${saveName}" ${isOverwrite ? 'updated' : 'imported'} successfully!`,
     '',
-    'Detected nodes:',
-    `  Positive prompt: Node #${nodeMap.positivePrompt}`,
-    nodeMap.negativePrompt ? `  Negative prompt: Node #${nodeMap.negativePrompt}` : null,
-    `  Sampler: Node #${nodeMap.sampler}`,
-    nodeMap.latentImage ? `  Image size: Node #${nodeMap.latentImage}` : null,
+    'Auto-detected:',
+    nodeMap.positivePrompt ? `  Prompt injection: Node #${nodeMap.positivePrompt}` : '  Prompt injection: not detected — use "view" to find the text node and "modify" to set prompt before generating',
+    nodeMap.loadImages?.length ? `  Reference images: Node #${nodeMap.loadImages.join(', #')}` : null,
+    nodeMap.sampler ? `  Sampler: Node #${nodeMap.sampler}` : null,
     nodeMap.checkpoint ? `  Checkpoint: ${summary.checkpoint || 'Node #' + nodeMap.checkpoint}` : null,
     '',
     'Summary:',
@@ -181,6 +175,8 @@ function handleImport(name: string | undefined, filePath: string | undefined) {
     summary.sampler ? `  Sampler: ${summary.sampler}` : null,
     summary.width && summary.height ? `  Size: ${summary.width}×${summary.height}` : null,
     `  Total nodes: ${summary.nodeCount}`,
+    '',
+    'Use "view" to see all node parameters. Use "modify" to change any parameter before generating.',
   ].filter(Boolean)
 
   // If this is the first workflow, hint about default
