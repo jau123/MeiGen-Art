@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/Type-MCP_Server-blue?style=flat-square" alt="MCP Server">
   <img src="https://img.shields.io/badge/Local-ComfyUI-green?style=flat-square" alt="ComfyUI Support">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square" alt="MIT"></a>
+  <a href="https://mcp-cn.com"><img src="https://img.shields.io/badge/MCP_Hub-China-red?style=flat-square" alt="MCP Hub China"></a>
 </p>
 
 <p align="center">
