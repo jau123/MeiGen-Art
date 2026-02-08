@@ -301,17 +301,6 @@ Environment variables take priority over the config file.
 
 ---
 
-## Development
-
-```bash
-npm install        # Install dependencies
-npm run build      # Compile TypeScript → dist/
-npm run dev        # Development mode (tsx)
-npm run typecheck  # Type check without emitting
-```
-
----
-
 ## License
 
-MIT
+[MIT](LICENSE) — free for personal and commercial use.
