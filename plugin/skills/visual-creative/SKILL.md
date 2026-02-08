@@ -36,14 +36,20 @@ Call AskUserQuestion with:
 
 This applies to: choosing directions, confirming extensions, selecting models.
 
-### Rule 2: Use Task agents for parallel generation
+### Rule 2: Use image-generator agents for ALL generation
 
-When generating 2+ images, spawn **one Task agent per image** using the Task tool in a **single response** (this makes them run in parallel). Do NOT call generate_image directly in the main conversation for batch generation.
+**ALWAYS** use the `meigen:image-generator` agent to call generate_image. NEVER call generate_image directly in the main conversation.
 
-Each Task agent prompt should be self-contained:
+- **Single image**: Spawn 1 `meigen:image-generator` agent
+- **Multiple images**: Spawn N `meigen:image-generator` agents in a **single response** (parallel execution)
+
+Each agent prompt must be self-contained. Example:
 ```
-"Call generate_image with this exact prompt: [full prompt text]. Use aspectRatio: '1:1'. Do NOT specify model or provider. Return the full tool response text."
+Task(subagent_type="meigen:image-generator",
+     prompt="Call generate_image with prompt: '[full prompt]', aspectRatio: '1:1'. Do NOT specify model or provider.")
 ```
+
+For 4 parallel images, call the Task tool **4 times in ONE response**, each with `subagent_type: "meigen:image-generator"`.
 
 ### Rule 3: Present URLs and paths, never describe images
 
@@ -86,10 +92,11 @@ The server auto-detects the best provider and model.
 
 | Agent | When to delegate |
 |-------|-----------------|
+| **image-generator** | **ALL `generate_image` calls.** Spawn one per image. For parallel: spawn N in a single response. |
 | **prompt-crafter** | When you need **2+ distinct prompts** — batch logos, product mockups, style variations. Uses Haiku. |
 | **gallery-researcher** | When exploring the gallery — find references, build mood boards, compare styles. Uses Haiku. |
 
-**For parallel image generation**: Use the **Task tool** to spawn multiple general-purpose agents in a single response. Each agent independently calls `generate_image`. This provides true parallel execution.
+**CRITICAL**: Never call `generate_image` directly. Always delegate to `meigen:image-generator` via the Task tool.
 
 ## Core Workflow Modes
 
