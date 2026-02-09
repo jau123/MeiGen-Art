@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-  <strong>让 Claude Code / OpenClaw 变成媲美 Lovart 的私人设计助理。<br>支持本地 ComfyUI 生图和接入 API，1,300+ 专业提示词库，多方案并行。</strong>
+  <strong>让 Claude Code / OpenClaw 变成媲美 Lovart 的私人设计助理</strong><br><sub>支持本地 ComfyUI 生图和接入 API，1,300+ 专业提示词库，多方案并行</sub>
 </p>
 
 <p align="center">
@@ -31,9 +31,11 @@
 
 ## 这是什么？
 
-MeiGen MCP 是一个开源的 **MCP Server**（插件），连接你的 AI 助手和专业图片生成工具。可以理解为给 Claude Code 或 OpenClaw 装了一个「显卡驱动」— 装上后，你的 AI 就能搜索视觉参考、增强提示词、直接在终端里生成图片。
+一个开源 MCP Server（通过插件市场安装），通过 7 个 tools 和精心设计的 skills，让 LLM 具备创意和审美能力，可以完成更复杂的设计任务。它能让 LLM 了解各种生图模型的使用技巧，通过参考图和多方案并行，交付更专业的成果。
 
-**免费功能无需 API Key** — 灵感搜索、提示词增强、模型浏览，装完即用。
+- 可以调用本地 ComfyUI 服务，不依赖外部 API；也可以方便地接入任意自定义 API
+- 内置 1,300+ 优质提示词模板和精心调试的提示词撰写技巧，把需求转化为具象的生图任务
+- 支持并行批量任务和子 Agent 调用，避免主窗口上下文膨胀
 
 ### 为什么装这个插件？
 

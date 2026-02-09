@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-  <strong>Turn Claude Code / OpenClaw into your personal design assistant rivaling Lovart.<br>Local ComfyUI generation, API integration, 1,300+ pro prompt library, multi-direction parallel output.</strong>
+  <strong>Turn Claude Code / OpenClaw into your personal design assistant rivaling Lovart</strong><br><sub>Local ComfyUI generation, API integration, 1,300+ pro prompt library, multi-direction parallel output</sub>
 </p>
 
 <p align="center">
@@ -31,9 +31,11 @@
 
 ## What Is This?
 
-MeiGen MCP is an open-source **MCP Server** (plugin) that bridges your AI assistant and professional image generation tools. Think of it as installing a "graphics card driver" for Claude Code or OpenClaw — once added, your AI can search visual references, enhance prompts, and generate images directly in the terminal.
+An open-source MCP Server (installed via plugin marketplace) that gives LLMs creative and aesthetic capabilities through 7 tools and carefully designed skills, enabling them to handle complex design tasks. It teaches LLMs how to use various image generation models effectively, delivering professional results through reference images and multi-direction parallel workflows.
 
-**No API key required for free features** — inspiration search, prompt enhancement, and model browsing work out of the box.
+- Works with local ComfyUI — no external API dependency; also easily integrates with any custom API
+- Built-in 1,300+ curated prompt templates and fine-tuned prompt engineering techniques that turn requirements into concrete image generation tasks
+- Parallel batch generation and sub-agent execution to keep the main context window clean
 
 ### Why Install This Plugin?
 
