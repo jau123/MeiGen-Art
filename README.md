@@ -31,7 +31,7 @@
 
 ## What Is This?
 
-An open-source MCP Server (installed via plugin marketplace) that gives LLMs creative and aesthetic capabilities through 7 tools and carefully designed skills, enabling them to handle complex design tasks. It teaches LLMs how to use various image generation models effectively, delivering professional results through reference images and multi-direction parallel workflows.
+An open-source MCP Server (installed via plugin marketplace) that gives LLMs creative and aesthetic capabilities through 8 tools and carefully designed skills, enabling them to handle complex design tasks. It teaches LLMs how to use various image generation models effectively, delivering professional results through reference images and multi-direction parallel workflows.
 
 - Works with local ComfyUI — no external API dependency; also easily integrates with any custom API
 - Built-in 1,300+ curated prompt templates and fine-tuned prompt engineering techniques that turn requirements into concrete image generation tasks
@@ -107,6 +107,20 @@ The wizard walks you through:
 2. **Enter credentials** — ComfyUI URL, API token, or key
 3. **Done** — restart Claude Code once more, then start generating
 
+### Cursor / VS Code / Windsurf / Roo Code
+
+One command to set up MeiGen for any supported AI coding tool:
+
+```bash
+npx meigen init cursor      # Cursor
+npx meigen init vscode      # VS Code / GitHub Copilot
+npx meigen init windsurf    # Windsurf
+npx meigen init roo         # Roo Code
+npx meigen init claude      # Claude Code (project-level)
+```
+
+This writes the correct MCP config file with the right format and path for your tool. If a config file already exists, MeiGen is merged in without overwriting your other servers.
+
 ### OpenClaw
 
 Our skills follow the [Agent Skills](https://agentskills.io) open standard — copy them into your OpenClaw workspace and they work directly. For MCP tools, use OpenClaw's MCP adapter to connect the MeiGen server.
@@ -145,6 +159,7 @@ Add to your MCP config (e.g. `.mcp.json`, `claude_desktop_config.json`):
 | `list_models` | Yes | List available models across all configured providers |
 | `upload_reference_image` | Yes | Compress and upload a local image for use as a reference |
 | `comfyui_workflow` | Yes | Manage ComfyUI workflow templates: list, view, import, modify, delete |
+| `manage_preferences` | Yes | Remember your preferred style, aspect ratio, model, and favorite prompts |
 | `generate_image` | Key | Generate an image — routes to the best available provider automatically |
 
 ### Slash Commands

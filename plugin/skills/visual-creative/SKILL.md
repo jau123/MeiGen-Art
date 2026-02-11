@@ -86,6 +86,7 @@ The server auto-detects the best provider and model.
 | `get_inspiration` | Get the full prompt and image URLs for a gallery entry | Free |
 | `enhance_prompt` | Get a system prompt to expand a brief description into a detailed prompt | Free |
 | `list_models` | List available AI models (only when user asks to see/switch models) | Free |
+| `manage_preferences` | Read/save user preferences: default style, aspect ratio, model, favorites | Free |
 | `generate_image` | Generate an image using AI | Requires API key |
 
 ## Agent Delegation

@@ -31,7 +31,7 @@
 
 ## 这是什么？
 
-一个开源 MCP Server（通过插件市场安装），通过 7 个 tools 和精心设计的 skills，让 LLM 具备创意和审美能力，可以完成更复杂的设计任务。它能让 LLM 了解各种生图模型的使用技巧，通过参考图和多方案并行，交付更专业的成果。
+一个开源 MCP Server（通过插件市场安装），通过 8 个 tools 和精心设计的 skills，让 LLM 具备创意和审美能力，可以完成更复杂的设计任务。它能让 LLM 了解各种生图模型的使用技巧，通过参考图和多方案并行，交付更专业的成果。
 
 - 可以调用本地 ComfyUI 服务，不依赖外部 API；也可以方便地接入任意自定义 API
 - 内置 1,300+ 优质提示词模板和精心调试的提示词撰写技巧，把需求转化为具象的生图任务
@@ -107,6 +107,20 @@
 2. **输入凭证** — ComfyUI 地址、API Token 或 Key
 3. **完成** — 再次重启 Claude Code，即可开始生图
 
+### Cursor / VS Code / Windsurf / Roo Code
+
+一行命令为任意支持的 AI 编程工具配置 MeiGen：
+
+```bash
+npx meigen init cursor      # Cursor
+npx meigen init vscode      # VS Code / GitHub Copilot
+npx meigen init windsurf    # Windsurf
+npx meigen init roo         # Roo Code
+npx meigen init claude      # Claude Code（项目级）
+```
+
+自动写入正确格式的 MCP 配置文件。如果配置文件已存在，MeiGen 会合并写入，不会覆盖你的其他 MCP 服务。
+
 ### OpenClaw
 
 我们的技能遵循 [Agent Skills](https://agentskills.io) 开放标准，可直接复制到 OpenClaw 工作区使用。如需 MCP 工具，通过 OpenClaw 的 MCP adapter 连接 MeiGen server 即可。
@@ -145,6 +159,7 @@
 | `list_models` | 是 | 列出所有已配置后端的可用模型 |
 | `upload_reference_image` | 是 | 压缩并上传本地图片，用作参考图 |
 | `comfyui_workflow` | 是 | 管理 ComfyUI 工作流模板：列表、查看、导入、修改、删除 |
+| `manage_preferences` | 是 | 记住你偏好的风格、比例、模型和收藏的提示词 |
 | `generate_image` | 需要 Key | 生成图片 — 自动路由到最佳可用后端 |
 
 ### 快捷命令

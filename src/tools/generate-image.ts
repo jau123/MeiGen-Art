@@ -23,6 +23,7 @@ import {
   listWorkflows,
 } from '../lib/providers/comfyui.js'
 import { Semaphore } from '../lib/semaphore.js'
+import { addRecentGeneration } from '../lib/preferences.js'
 
 // Concurrency control: ComfyUI serial (local GPU), API max 4 parallel
 const apiSemaphore = new Semaphore(4)
@@ -177,6 +178,8 @@ async function generateWithOpenAI(
 
   const savedPath = saveImageLocally(result.imageBase64, result.mimeType)
 
+  addRecentGeneration({ prompt, provider: 'openai', model: model || config.openaiModel })
+
   const lines = [`Image generated successfully.`]
   lines.push(`- Provider: OpenAI (${model || config.openaiModel})`)
   if (referenceImages?.length) lines.push(`- Reference images: ${referenceImages.length} used`)
@@ -238,6 +241,8 @@ async function generateWithMeiGen(
 
   const savedPath = saveImageLocally(base64, mimeType)
 
+  addRecentGeneration({ prompt, provider: 'meigen', model: model || 'default', aspectRatio })
+
   const lines = [`Image generated successfully.`]
   lines.push(`- Provider: MeiGen (model: ${model || 'default'})`)
   lines.push(`- Image URL: ${status.imageUrl}`)
@@ -286,6 +291,8 @@ async function generateWithComfyUI(
   )
 
   const savedPath = saveImageLocally(result.imageBase64, result.mimeType)
+
+  addRecentGeneration({ prompt, provider: 'comfyui', model: workflowName })
 
   const lines = [`Image generated successfully.`]
   lines.push(`- Provider: ComfyUI (workflow: ${workflowName})`)

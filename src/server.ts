@@ -13,6 +13,7 @@ import { registerGetInspiration } from './tools/get-inspiration.js'
 import { registerGenerateImage } from './tools/generate-image.js'
 import { registerComfyuiWorkflow } from './tools/comfyui-workflow.js'
 import { registerUploadReferenceImage } from './tools/upload-reference-image.js'
+import { registerManagePreferences } from './tools/manage-preferences.js'
 
 const SERVER_INSTRUCTIONS = `You are an AI image creation assistant powered by MeiGen MCP.
 
@@ -25,6 +26,22 @@ If generate_image returns "No image generation providers configured", guide the 
 3. Restart Claude Code to activate
 
 Free features (search_gallery, enhance_prompt, get_inspiration, list_models) work without any API key.
+
+## Phase 0.5: Load User Preferences
+
+At the START of a conversation involving image creation, call manage_preferences(action="get")
+ONCE to load saved preferences. Then apply them as defaults throughout the conversation:
+- If user doesn't specify style → use their preferred style from defaults
+- If user doesn't specify aspect ratio → use their preferred aspectRatio
+- Incorporate styleNotes into prompt enhancement (Phase 1B)
+- When presenting results, briefly note if you applied their preferences
+
+Do NOT call manage_preferences("get") repeatedly — read once, use throughout.
+
+When a user says something like "always use this style" or "remember this preference",
+call manage_preferences(action="set") to save it.
+
+When a user particularly likes a prompt, offer to save it with manage_preferences(action="add_favorite").
 
 ## Phase 1: Intent Assessment
 
@@ -179,7 +196,7 @@ export function createServer() {
   const apiClient = new MeiGenApiClient(config)
 
   const server = new McpServer(
-    { name: 'meigen', version: '0.1.0' },
+    { name: 'meigen', version: '1.2.0' },
     { instructions: SERVER_INSTRUCTIONS },
   )
 
@@ -188,6 +205,7 @@ export function createServer() {
   registerSearchGallery(server)
   registerListModels(server, apiClient, config)
   registerGetInspiration(server, apiClient)
+  registerManagePreferences(server)
 
   // Reference image upload (compress + upload to R2)
   registerUploadReferenceImage(server, config)
